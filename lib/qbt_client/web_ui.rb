@@ -400,10 +400,10 @@ module QbtClient
     #
     def pause torrent_hash
       options = {
-        body: "hash=#{torrent_hash}"
+        query: { 'hashes' => torrent_hash }
       }
 
-      self.class.post('/command/pause', options)
+      self.class.post('/api/v2/torrents/pause', options)
     end
 
     ###
@@ -418,10 +418,10 @@ module QbtClient
     #
     def resume torrent_hash
       options = {
-        body: "hash=#{torrent_hash}"
+        query: { "hashes" => torrent_hash }
       }
 
-      self.class.post('/command/resume', options)
+      self.class.get('/api/v2/torrents/resume', options)
     end
 
     ###
@@ -436,12 +436,21 @@ module QbtClient
     #
     # If passing mulitple urls, pass them as an array.
     #
-    def download urls
+    def download urls, save_path: nil, paused: nil
       urls = Array(urls)
-      urls = urls.join('%0A')
+
+      data = {
+        'urls' => urls.join("\n")
+      }
+
+      data['savepath'] = save_path if save_path
+      data['paused'] = paused if paused
+
+      p data
 
       options = {
-        body: "urls=#{urls}"
+        body: data,
+        multipart: true
       }
 
       self.class.post('/command/download', options)
@@ -499,7 +508,7 @@ module QbtClient
         body: { "hashes" => torrent_hashes, "location" => path },
       }
 
-      self.class.post('/command/setLocation', options)
+      self.class.post('/api/v2/torrents/setLocation', options)
     end
 
     ###
